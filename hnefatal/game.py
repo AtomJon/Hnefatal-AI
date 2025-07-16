@@ -70,6 +70,9 @@ class Move():
         self.from_pos = from_pos
         self.to_pos = to_pos
 
+    def __str__(self):
+        return f"Move from ({self.from_pos.x}, {self.from_pos.y}) to ({self.to_pos.x}, {self.to_pos.y})"
+
 class Game:
     board = []
 
@@ -184,6 +187,7 @@ class Game:
         return self.board[pos.x][pos.y]
     
     # Check if a move is valid. Any piece can move to an empty space in the same row or column, as long as there are no pieces in between.
+    # Any piece cannot occupy a corner or the middle of the board, besides the king.
     def is_valid_move(self, from_pos: Coord, to_pos: Coord):
         assert all(0 <= element < 13 for element in [from_pos.x, from_pos.y, to_pos.x, to_pos.y]), "Coordinates must be between 0 and 12"
 
@@ -196,6 +200,12 @@ class Game:
         
         if self.piece_at(to_pos) != Piece.EMPTY:
             return False
+        
+        if piece != Piece.KING:
+            if to_pos.x in [0, 12] and to_pos.y in [0, 12]:
+                return False
+            if to_pos == Coord(6, 6):
+                return False
 
         if from_pos.x == to_pos.x:
             row = self.board[from_pos.x]
@@ -231,14 +241,15 @@ class Game:
         
         return True
     
-    # Move a piece from one position to another and attack adjacent pieces if opponent's pieces are sandwiched. King can attack too.
+    # Move a piece from one position to another.
+    # Attack adjacent pieces if it's an opponent and they are sandwiched either against an allied piece or a corner, or the center.
     def move_piece_and_attack(self, from_pos: Coord, to_pos: Coord):
         piece = self.piece_at(from_pos)
         player = piece.get_player()
         self.board[to_pos.x][to_pos.y] = piece
         self.board[from_pos.x][from_pos.y] = Piece.EMPTY
 
-        # check for attacks
+        # check for adjacent pieces to attack
         for dx in [-1, 0, 1]:
             for dy in [-1, 0, 1]:
                 if abs(dx) + abs(dy) != 1: continue
@@ -251,12 +262,17 @@ class Game:
                     continue
 
                 nnx = to_pos.x + 2*dx
-                if nnx > 12 or nnx < 0: continue
-
                 nny = to_pos.y + 2*dy
-                if nny > 12 or nny < 0: continue
+                against_corner_wall = (nnx == 0 or nnx == 12) and (nny == 0 or nny == 12)
+                if not against_corner_wall:
+                    if nnx > 12 or nnx < 0: continue
+                    if nny > 12 or nny < 0: continue
 
-                if self.piece_at(Coord(nnx, nny)) in player:
+                against_center_wall = nnx == 6 and nny == 6
+
+                allied_piece_between = self.piece_at(Coord(nnx, nny)) in player
+
+                if allied_piece_between or against_corner_wall or against_center_wall:
                     # We attacked a piece
-                    print(f"Attacking piece at ({nx}, {ny})")
+                    # print(f"Attacking piece at ({nx}, {ny})")
                     self.board[nx][ny] = Piece.EMPTY

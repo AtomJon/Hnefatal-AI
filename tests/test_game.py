@@ -80,7 +80,20 @@ def test_is_valid_move():
     from_pos.x, from_pos.y = 6, 6
     to_pos.x, to_pos.y = 6, 2
     assert g.is_valid_move(from_pos, to_pos) is False, "Expected obstructed move from (12,5) to (12,3)"
-    
+
+    # Invalid move: center position
+    g.board[6][6] = Piece.EMPTY  # Clear center for this test
+    g.board[5][6] = Piece.DEFENDER
+    from_pos.x, from_pos.y = 5, 6
+    from_pos.x, from_pos.y = 6, 6
+    assert g.is_valid_move(from_pos, to_pos) is False, "Expected invalid move to center (6,6)"
+
+    # Invalid move: corner position
+    g.board[0][0] = Piece.EMPTY  # Clear center for this test
+    g.board[0][1] = Piece.DEFENDER
+    from_pos.x, from_pos.y = 0, 1
+    from_pos.x, from_pos.y = 0, 0
+    assert g.is_valid_move(from_pos, to_pos) is False, "Expected invalid move to corner (0,0)"
 
     g.board[0][11] = Piece.KING
     from_pos.x, from_pos.y = 0, 11
@@ -105,6 +118,36 @@ def test_attack_piece():
     # Check if an adjacent piece was attacked
     attacked_pos = Coord(0, 1)
     assert g.piece_at(attacked_pos) == Piece.EMPTY, "Expected attacked piece to be removed"
+
+    # Attack a piece against a corner
+    g.board[0][1] = Piece.ATTACKER
+    g.board[0][2] = Piece.EMPTY
+    g.board[0][3] = Piece.DEFENDER
+    from_pos = Coord(0, 3)
+    to_pos = Coord(0, 2)
+    g.move_piece_and_attack(from_pos, to_pos)
+    assert g.piece_at(Coord(0, 1)) == Piece.EMPTY, "Expected piece to be removed"
+    assert g.piece_at(to_pos) == Piece.DEFENDER, "Expected piece to remain"
+
+    # Attack a piece against the center
+    g.board[6][5] = Piece.ATTACKER
+    g.board[6][4] = Piece.EMPTY
+    g.board[6][3] = Piece.DEFENDER
+    from_pos = Coord(6, 3)
+    to_pos = Coord(6, 4)
+    g.move_piece_and_attack(from_pos, to_pos)
+    assert g.piece_at(Coord(6, 5)) == Piece.EMPTY, "Expected piece to be removed"
+    assert g.piece_at(to_pos) == Piece.DEFENDER, "Expected piece to remain"
+
+    # INVALID ATTACK: Attack a piece against a wall
+    g.board[0][2] = Piece.ATTACKER
+    g.board[0][3] = Piece.EMPTY
+    g.board[0][4] = Piece.DEFENDER
+    from_pos = Coord(0, 4)
+    to_pos = Coord(0, 3)
+    g.move_piece_and_attack(from_pos, to_pos)
+    assert g.piece_at(to_pos) == Piece.DEFENDER, "Expected piece to remain"
+    assert g.piece_at(Coord(0,2)) == Piece.ATTACKER, "Expected piece to remain"
 
 def test_move_piece():
     g = Game()
