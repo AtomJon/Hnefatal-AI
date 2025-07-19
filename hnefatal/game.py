@@ -26,6 +26,12 @@ class Piece(Enum):
         else:
             return None
         
+    def __int__(self):
+        return self.value
+        
+    def __float__(self):
+        return float(self.value)
+        
 class Player(Enum):
     ATTACKER = 1
     DEFENDER = 2
