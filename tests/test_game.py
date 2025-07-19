@@ -195,7 +195,6 @@ def test_game_over():
     g.board[6][7] = Piece.ATTACKER
     g.board[5][6] = Piece.ATTACKER
     g.board[7][6] = Piece.ATTACKER
-    g.print_board()
     assert g.is_game_over() == Player.ATTACKER, "Expected surrounded king to be attacker"
 
     g = Game()
