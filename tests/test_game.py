@@ -11,8 +11,10 @@ def test_fill_board_13_by_13_content():
     g.fill_board_13_by_13()
     assert len(g.board) == 13, "Expected board to have 13 rows"
     assert all(len(row) == 13 for row in g.board), "Expected each row to have 13 columns"
+
     # Check King position
     assert g.board[6][6] == Piece.KING, "Expected King to be at position (6, 6)"
+
     # Check that attackers and defenders are present
     attackers = sum(piece == Piece.ATTACKER for row in g.board for piece in row)
     defenders = sum(piece == Piece.DEFENDER for row in g.board for piece in row)
@@ -166,6 +168,48 @@ def test_piece_equality():
     assert Piece.EMPTY not in Player.DEFENDER
     assert Piece.ATTACKER not in Player.DEFENDER
 
+def test_game_over():
+    g = Game()
+    g.board[6][5] = Piece.DEFENDER
+    g.board[6][4] = Piece.ATTACKER
+    g.board[0][0] = Piece.KING
+    assert g.is_game_over() == Player.DEFENDER, "Expected king in corner to be defender"
+    g.board[0][0] = Piece.EMPTY
+    g.board[12][0] = Piece.KING
+    assert g.is_game_over() == Player.DEFENDER, "Expected king in corner to be defender"
+    g.board[12][0] = Piece.EMPTY
+    g.board[0][12] = Piece.KING
+    assert g.is_game_over() == Player.DEFENDER, "Expected king in corner to be defender"
+    g.board[0][12] = Piece.EMPTY
+    g.board[12][12] = Piece.KING
+    assert g.is_game_over() == Player.DEFENDER, "Expected king in corner to be defender"
+
+    g.board[12][12] = Piece.EMPTY
+    g.board[6][4] = Piece.EMPTY
+    g.board[6][6] = Piece.KING
+    assert g.is_game_over() == Player.DEFENDER, "Expected no remaining defenders to be attacker"
+    g.board[6][5] = Piece.ATTACKER
+    assert g.is_game_over() == Player.ATTACKER, "Expected no remaining attackers to be defender"
+
+    g.board[6][6] = Piece.KING
+    g.board[6][7] = Piece.ATTACKER
+    g.board[5][6] = Piece.ATTACKER
+    g.board[7][6] = Piece.ATTACKER
+    g.print_board()
+    assert g.is_game_over() == Player.ATTACKER, "Expected surrounded king to be attacker"
+
+    g = Game()
+    g.board[6][6] = Piece.DEFENDER
+
+    g.board[0][6] = Piece.KING
+    g.board[0][7] = Piece.ATTACKER
+    g.board[0][5] = Piece.ATTACKER
+    g.board[1][6] = Piece.ATTACKER
+    assert g.is_game_over() == Player.ATTACKER, "Expected surrounded king to be attacker"
+
+    g.fill_board_13_by_13()
+    assert g.is_game_over() == None, "Expected ongoing game"
+
 def run_all_tests():
     test_game_initialization()
     test_print_board_runs()
@@ -173,5 +217,6 @@ def run_all_tests():
     test_is_valid_move()
     test_move_piece()
     test_piece_equality()
+    test_game_over()
 
     print("### All tests passed! ###")

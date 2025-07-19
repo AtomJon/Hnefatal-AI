@@ -83,7 +83,7 @@ class Game:
     board = []
 
     def __init__(self):
-        self.board = [[Piece.EMPTY] * 13] * 13
+        self.board = [[Piece.EMPTY for _ in range(13)] for _ in range(13)]
         
     def fill_board_13_by_13(self):
         self.board = [[Piece.EMPTY for _ in range(13)] for _ in range(13)]
@@ -164,30 +164,26 @@ class Game:
 
         return False
     
+    # Returns None if game is still ongoing or returns the player whom won
     def is_game_over(self):
-        
         # Check if the king is in a corner
         if self.is_king_in_corner():
-            print("Game Over: King is in a corner!")
-            return True
+            return Player.DEFENDER
         
         # Check if the king is surrounded
         if self.is_king_surrounded():
-            print("Game Over: King is surrounded!")
-            return True
+            return Player.ATTACKER
         
         # Check if all pieces of one player are captured
         attacker_pieces = sum(piece == Piece.ATTACKER for row in self.board for piece in row)
-        defender_pieces = sum(piece == Piece.DEFENDER or piece == Piece.KING for row in self.board for piece in row)
+        defender_pieces = sum(piece == Piece.DEFENDER for row in self.board for piece in row) # If no defenders but the king is alive, attackers win
 
         if attacker_pieces == 0:
-            print("Game Over: Defenders win!")
-            return True
+            return Player.DEFENDER
         elif defender_pieces == 0:
-            print("Game Over: Attackers win!")
-            return True
+            return Player.ATTACKER
         
-        return False
+        return None
     
     def piece_at(self, pos: Coord):
         return self.board[pos.x][pos.y]
