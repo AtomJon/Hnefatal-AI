@@ -1,10 +1,10 @@
-from enum import Enum
+from enum import Enum, IntEnum
 
-class Piece(Enum):
+class Piece(IntEnum):
     EMPTY = 0
-    KING = 2
-    DEFENDER = 1
-    ATTACKER = -1
+    KING = 3
+    DEFENDER = 2
+    ATTACKER = 1
 
     def __str__(self):
         if self == Piece.EMPTY:
@@ -67,9 +67,14 @@ class Coord():
         self.y = y
 
     def __eq__(self, other):
-        if isinstance(other, Coord):
-            return self.x == other.x and self.y == other.y
-        return False
+        assert isinstance(other, Coord), f"Expected other to be Coord, instead got {type(other)}"
+        
+        return self.x == other.x and self.y == other.y
+    
+    def __sub__(self, other):
+        assert isinstance(other, Coord), f"Expected subtraction with type Coord, instead got {type(other)}"
+
+        return Coord(self.x - other.x, self.y - other.y)
 
 class Move():
     def __init__(self, from_pos: Coord, to_pos: Coord):
@@ -78,6 +83,11 @@ class Move():
 
     def __str__(self):
         return f"Move from ({self.from_pos.x}, {self.from_pos.y}) to ({self.to_pos.x}, {self.to_pos.y})"
+    
+    def __eq__(self, other):
+        assert isinstance(other, Move), f"Expected other to be Move, instead got {type(other)}"
+
+        return self.from_pos == other.from_pos and self.to_pos == other.to_pos
 
 class Game:
     board = []
@@ -260,7 +270,7 @@ class Game:
                 if ny > 12 or ny < 0: continue
 
                 other_piece = self.piece_at(Coord(nx, ny))
-                if other_piece == Piece.EMPTY or other_piece in player or other_piece == Piece.KING:
+                if other_piece == Piece.EMPTY or other_piece.get_player() == player or other_piece == Piece.KING:
                     continue
 
                 nnx = to_pos.x + 2*dx
@@ -276,5 +286,4 @@ class Game:
 
                 if allied_piece_between or against_corner_wall or against_center_wall:
                     # We attacked a piece
-                    # print(f"Attacking piece at ({nx}, {ny})")
                     self.board[nx][ny] = Piece.EMPTY

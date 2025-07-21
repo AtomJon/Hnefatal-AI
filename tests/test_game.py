@@ -184,17 +184,19 @@ def test_game_over():
     g.board[12][12] = Piece.KING
     assert g.is_game_over() == Player.DEFENDER, "Expected king in corner to be defender"
 
-    g.board[12][12] = Piece.EMPTY
-    g.board[6][4] = Piece.EMPTY
+    g = Game()
     g.board[6][6] = Piece.KING
-    assert g.is_game_over() == Player.DEFENDER, "Expected no remaining defenders to be attacker"
     g.board[6][5] = Piece.ATTACKER
-    assert g.is_game_over() == Player.ATTACKER, "Expected no remaining attackers to be defender"
+    assert g.is_game_over() == Player.ATTACKER, "Expected no remaining defenders to be attacker"
+    g.board[6][5] = Piece.DEFENDER
+    assert g.is_game_over() == Player.DEFENDER, "Expected no remaining attackers to be defender"
 
     g.board[6][6] = Piece.KING
+    g.board[4][4] = Piece.DEFENDER
     g.board[6][7] = Piece.ATTACKER
     g.board[5][6] = Piece.ATTACKER
     g.board[7][6] = Piece.ATTACKER
+    g.board[6][5] = Piece.ATTACKER
     assert g.is_game_over() == Player.ATTACKER, "Expected surrounded king to be attacker"
 
     g = Game()
