@@ -216,8 +216,9 @@ class Game:
         if piece != Piece.KING:
             if to_pos.x in [0, 12] and to_pos.y in [0, 12]:
                 return False
-            if to_pos == Coord(6, 6):
-                return False
+            
+        if to_pos == Coord(6, 6):
+            return False
 
         if from_pos.x == to_pos.x:
             row = self.board[from_pos.x]
